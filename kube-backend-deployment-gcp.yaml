@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-app-deployment-gcp
+spec:
+  selector:
+    matchLabels:
+      apps: backend-gcp
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        apps: backend-gcp
+    spec:
+      containers:
+      - name: kube-e2e-service
+        image: europe-west8-docker.pkg.dev/km1-runcloud/mydocker-art-repo/test-art-demo02:v1
+        ports:
+          - containerPort: 8080
+      - name: kube-esp
+        image: gcr.io/endpoints-release/endpoints-runtime:1
+        args: [
+          "--http_port", "8081",
+          "--backend", "127.0.0.1:8080",
+          "--service", "apis.navveenbalani.dev",
+          "--rollout_strategy", "managed",
+        ]
+        readinessProbe:
+         httpGet:
+          path: /healthz?key=AIzaSyC0m7d4cc-jOwJIzymv9ntObF1ukIMrTc-
+          port: 8081
+         initialDelaySeconds: 60
+        livenessProbe:
+         httpGet:
+          path: /healthz?key=AIzaSyC0m7d4cc-jOwJIzymv9ntObF1ukIMrTc-
+          port: 8081
+         initialDelaySeconds: 60
+        ports:
+          - containerPort: 8081
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service-gcp
+spec:
+  ports:
+  - port: 8081
+    targetPort: 8081
+    protocol: TCP
+    name: http
+  selector:
+    apps: backend-gcp
+  type: LoadBalancer
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: basic-ingress
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.allow-http: "true"
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: basic-ingress
+            port:
+              number: 80           

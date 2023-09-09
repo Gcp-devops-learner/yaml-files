@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: helloworld
+spec:
+  selector:
+    matchLabels:
+      app: helloworld
+  replicas: 1 # tells deployment to run 1 pods matching the template
+  template: # create pods using pod definition in this template
+    metadata:
+      labels:
+        app: helloworld
+    spec:
+      containers:
+      - name: helloworld
+        image: karthequian/helloworld:latest
+        ports:
+        - containerPort: 80
+        
+        
+        gcloud compute ssh jump-vm \
+  --project km1-runcloud \
+  --zone us-central1 \
+  -- -L 2222:192.168.0.200:22 -N -q -f
+  
+  gcloud compute ssh jump-vm \
+  --project my-test-project \
+  --zone europe-west1-b \
+  -- -L 2222:192.168.0.200:22 -N -q -f
+  
+  
+  gcloud compute ssh jump-vm \
+  --project km1-runcloud \
+  --zone asia-south1-b \
+  -- -L 2222:192.168.0.200:22 -N -q -f
+   
+   gcloud compute ssh my-bastion-vm \
+  --project  km1-runcloud \
+  --zone asia-south1-b \
+  -- -L 8888:localhost:8888 -N -q -f
+  
+  gcloud compute ssh my-bastion-vm \
+  --project  km1-runcloud \
+  --zone asia-south1-b \
+  --tunnel-through-iap
+  
+  
+  
+  
+  
+  

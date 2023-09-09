@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: frontend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+  namespace: frontend
+  labels:
+    app: frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: gcr.io/km1-runcloud/myalpine@sha256:c1b906c84a3473a862c1eec85fac41d54bbd95a8c5eac85359c6e6c5bb0f0ab8
+        ports:
+        - containerPort: 5000
+        env:
+        - name: FLASK_APP
+          value: "app.py"
+        - name: REDIS_SERVER
+          value: "10.130.0.16:6379 "
+        command: ["sh"]
+        args: ["-c","flask run --host=0.0.0.0"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-public
+  namespace: frontend
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 5000
+  selector:
+      app: frontend
